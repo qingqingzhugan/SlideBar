@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SlideBar</string>
+    <string name="accessibility_service_description">用于模拟返回，菜单 功能键</string>
+
+</resources>
