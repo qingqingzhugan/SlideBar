@@ -32,6 +32,7 @@ public class SlideService extends AccessibilityService {
     //创建浮动窗口设置布局参数的对象
     WindowManager mWindowManager;
     View leftView;
+    View rightView;
 
     int touchSlop;
 
@@ -51,27 +52,31 @@ public class SlideService extends AccessibilityService {
         mWindowManager = (WindowManager) getApplication().getSystemService(getApplication().WINDOW_SERVICE);
         //设置window type
         wmParams.type = WindowManager.LayoutParams.TYPE_PHONE;
-        wmParams.flags=WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+        //设置浮动窗口不可聚焦（实现操作除浮动窗口外的其他可见窗口的操作）
+        wmParams.flags=WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         //设置图片格式，效果为背景透明
         wmParams.format = PixelFormat.RGBA_8888;
-        //设置浮动窗口不可聚焦（实现操作除浮动窗口外的其他可见窗口的操作）
-        wmParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         //调整悬浮窗显示的停靠位置为左侧置顶
-        wmParams.gravity = Gravity.LEFT|Gravity.BOTTOM;
+        wmParams.gravity = Gravity.LEFT|Gravity.CENTER_VERTICAL;
         // 以屏幕左上角为原点，设置x、y初始值，相对于gravity
         wmParams.x =0;
-        wmParams.y =(mWindowManager.getDefaultDisplay().getHeight()-1000)/2;
+        wmParams.y =0;
 
         //设置悬浮窗口长宽数据
         wmParams.width = (int) (getApplication().getResources().getDisplayMetrics().density * 10);
         wmParams.height = 1000;
         LayoutInflater inflater = LayoutInflater.from(getApplication());
         //获取浮动窗口视图所在布局
-        leftView = inflater.inflate(R.layout.slide_bar, null);
-        leftView.setOnTouchListener(new LeftOnTouchListener());
+        leftView = inflater.inflate(R.layout.left_slide_bar, null);
         mWindowManager.addView(leftView, wmParams);
         //浮动窗口按钮
-        leftView.setOnTouchListener(new LeftOnTouchListener());
+        leftView.setOnTouchListener(new LeftOnTouchListener(true));
+
+        rightView = inflater.inflate(R.layout.right_slide_bar, null);
+        wmParams.gravity = Gravity.RIGHT|Gravity.CENTER_VERTICAL;
+        mWindowManager.addView(rightView, wmParams);
+        //浮动窗口按钮
+        rightView.setOnTouchListener(new LeftOnTouchListener(false));
     }
 
     @Override
@@ -87,6 +92,11 @@ public class SlideService extends AccessibilityService {
         private float startX;
         private float startY;
 
+        private boolean isBack=true;
+
+        public LeftOnTouchListener(boolean isBack){
+            this.isBack=isBack;
+        }
         private boolean isMove = false;
 
         @Override
@@ -101,7 +111,18 @@ public class SlideService extends AccessibilityService {
                     break;
                 case MotionEvent.ACTION_UP:
                     if(isMove){
-                        performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
+                        if(isBack){
+                            performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);}
+                        else{
+                            // home键
+//                            performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
+                            //最近使用的程序
+                            performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS);
+                            //关机选项栏
+//                            performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG);
+                            // 设置栏
+//                            performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS);
+                        }
                         isMove=false;
                         return true;
                     }
