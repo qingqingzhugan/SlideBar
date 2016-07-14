@@ -97,11 +97,7 @@ public class SlideService extends AccessibilityService {
                     startY = event.getY();
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    if (Math.abs(event.getY() - startY)> touchSlop) {
-                        isMove = true;
-                    } else {
-                        isMove = false;
-                    }
+                    isMove = Math.abs(event.getY() - startY) > touchSlop;
                     break;
                 case MotionEvent.ACTION_UP:
                     if(isMove){
